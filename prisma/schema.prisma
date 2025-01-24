@@ -1,0 +1,66 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum UserRole {
+  ADMIN
+  DONOR
+  BURSAR
+  CHIEF
+}
+
+enum VerificationStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+model User {
+  id                 String             @id @default(uuid())
+  email              String             @unique
+  password           String
+  fullName           String
+  phoneNumber        String?
+  role               UserRole
+  verificationStatus VerificationStatus @default(PENDING)
+  
+  // Role-specific relations can be added here
+  donor              Donor?
+  bursar             Bursar?
+  chief              Chief?
+  
+  createdAt          DateTime           @default(now())
+  updatedAt          DateTime           @updatedAt
+}
+
+model Donor {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  
+  // Additional donor-specific fields
+  location String?
+}
+
+model Bursar {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  
+  // School-specific details
+  schoolName String?
+}
+
+model Chief {
+  id     String @id @default(uuid())
+  userId String @unique
+  user   User   @relation(fields: [userId], references: [id])
+  
+  // Village-specific details
+  villageName String?
+}
